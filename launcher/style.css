@@ -84,10 +84,18 @@ body {
   -webkit-backface-visibility: hidden; backface-visibility: hidden;
 }
 .tile:last-child { margin-right: 0; }
-.tile img { position: absolute; top: 50%; left: 50%; -webkit-transform: translate(-50%,-50%); transform: translate(-50%,-50%); }
+.tile img {
+  position: absolute; top: 50%; left: 50%; max-width: 90%; max-height: 72%;
+  object-fit: contain; -webkit-transform: translate(-50%,-50%); transform: translate(-50%,-50%);
+}
+.row.dock.compact .tile img { max-width: 90%; max-height: 72%; object-fit: contain; }
 .tile b {
   position: absolute; top: 0; left: 0; width: 100%; line-height: 184px; text-align: center;
   font-size: 36px; font-weight: 700; letter-spacing: -.5px;
+}
+.row.dock.compact .tile b {
+  display: flex; align-items: center; justify-content: center; padding: 0 8px;
+  line-height: 1.1; font-size: 20px; white-space: normal;
 }
 .tile.focus { -webkit-transform: scale(1.08); transform: scale(1.08); z-index: 3; }
 

@@ -91,7 +91,10 @@ Y genera `build/Home-unsigned.wgt`: un paquete **sin firmar** (`.wgt` es el form
 Abre con un editor de texto el `launcher/config.js` que se acaba de crear:
 
 - `city: null` significa que el reloj del tiempo está desactivado. Para activarlo, sustituye `null` por algo como `{ name: "Barcelona", lat: 41.38, lon: 2.17 }`, usando el nombre y las coordenadas de tu propia ciudad.
-- `dock` es la lista de apps favoritas que aparecen primero (por ejemplo `["Netflix", "YouTube", "Prime Video"]`).
+- `dock` es la lista de apps que aparecen en la primera fila, en ese orden. Si hay más de cinco, Home reduce automáticamente el ancho de las tarjetas para que quepan en pantalla.
+- `show_all_apps: true` muestra todas las apps que Tizen informa, incluidas las ocultas y de fábrica. Algunas pueden abrir pruebas, menús de servicio o restablecimientos; para volver a una lista seleccionada, ponlo en `false` y usa `apps.js` y `samsung_apps`.
+- `blocklist` sigue excluyendo los nombres que indiques incluso con `show_all_apps: true`; por ejemplo, `blocklist: [/aging/i]` oculta Aging Mode.
+- `samsung_apps` acepta apps seleccionadas con `{ name: "Nombre visible" }` o `{ id: "ID", name: "Nombre" }`. Las entradas añadidas explícitamente por nombre permiten usar apps que normalmente bloquea el filtro interno; `blocklist` personalizada sigue aplicándose.
 
 El resto de aplicaciones se detectan a partir de lo que Tizen muestra como visible. Vuelve a ejecutar el comando de preparación después de cambiar la configuración.
 
@@ -158,4 +161,3 @@ Antes de repetir pasos al azar, revisa la [tabla de problemas habituales](TROUBL
 ## Documentación oficial
 
 Flujo de desarrollo y conexión: [Samsung TV Device](https://developer.samsung.com/smarttv/develop/getting-started/using-sdk/tv-device.html). Firma: [Creating Certificates](https://developer.samsung.com/smarttv/develop/getting-started/setting-up-sdk/creating-certificates.html). Comandos: [Samsung CLI](https://developer.samsung.com/smarttv/develop/getting-started/using-sdk/command-line-interface.html) y [ejemplo oficial con SDB](https://developer.samsung.com/smarttv/develop/extension-libraries/webassembly/tizen-sockets-extension/building-curl-applications-using-cli-tools.html).
-

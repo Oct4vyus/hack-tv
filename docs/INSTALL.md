@@ -91,7 +91,10 @@ And it generates `build/Home-unsigned.wgt`: an **unsigned** package (`.wgt` is T
 Open the newly created `launcher/config.js` in a text editor:
 
 - `city: null` means the weather clock is disabled. To enable it, replace `null` with something like `{ name: "Barcelona", lat: 41.38, lon: 2.17 }`, using your own city's name and coordinates.
-- `dock` is the list of favorite apps shown first (e.g. `["Netflix", "YouTube", "Prime Video"]`).
+- `dock` is the list of apps shown in the first row, in that order. If there are more than five, Home automatically narrows the tiles to fit the screen.
+- `show_all_apps: true` shows every app Tizen reports, including hidden and factory apps. Some can open tests, service menus, or reset functions; set it to `false` to use only the selected apps in `apps.js` and `samsung_apps`.
+- `blocklist` still excludes names you specify when `show_all_apps: true`; for example, `blocklist: [/aging/i]` hides Aging Mode.
+- `samsung_apps` accepts selected apps using `{ name: "Visible name" }` or `{ id: "ID", name: "Name" }`. Apps explicitly added by name can be shown even if the built-in filter would normally block them; the custom `blocklist` still applies.
 
 The rest of your installed apps are detected automatically from what Tizen reports as visible. Run the preparation command again after changing your configuration.
 
@@ -158,4 +161,3 @@ Before retrying steps at random, check the [common issues table](TROUBLESHOOTING
 ## Official documentation
 
 Development and connection flow: [Samsung TV Device](https://developer.samsung.com/smarttv/develop/getting-started/using-sdk/tv-device.html). Signing: [Creating Certificates](https://developer.samsung.com/smarttv/develop/getting-started/setting-up-sdk/creating-certificates.html). Commands: [Samsung CLI](https://developer.samsung.com/smarttv/develop/getting-started/using-sdk/command-line-interface.html) and [official SDB example](https://developer.samsung.com/smarttv/develop/extension-libraries/webassembly/tizen-sockets-extension/building-curl-applications-using-cli-tools.html).
-

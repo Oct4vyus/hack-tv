@@ -14,8 +14,9 @@ FILES = ('config.xml', 'index.html', 'style.css', 'app.js', 'apps.js', 'icon.png
 # Inventario explícito: nunca copiar carpetas completas ni archivos privados adicionales.
 ASSETS = {
     'logos': ('3cat.png', 'appletv.png', 'atresplayer.png', 'disneyplus.png',
-              'hbomax.png', 'movistar.png', 'netflix.png', 'plex.png',
-              'primevideo.png', 'rakuten.png', 'youtube.png'),
+              'flow.png', 'hbomax.png', 'internet.png', 'jellyfin.png',
+              'movistar.png', 'netflix.png', 'plex.png', 'primevideo.png',
+              'rakuten.png', 'sonance.png', 'spotify.png', 'tessel.png', 'xuper.png', 'youtube.png'),
     'glow': ('3cat.png', 'apple.png', 'atres.png', 'brew.png', 'default.png',
              'disney.png', 'gallery.png', 'hbo.png', 'internet.png',
              'movistar.png', 'netflix.png', 'plex.png', 'prime.png',

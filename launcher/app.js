@@ -1,14 +1,111 @@
 /* Launcher estilo Apple TV para Tizen 5.5. Solo ES5 (el motor web de la TV es antiguo). */
 (function () {
   var DOCK = (window.CONFIG && window.CONFIG.dock) || ["Netflix", "YouTube", "Prime Video", "Disney+", "HBO Max"];
+  var SHOW_ALL_APPS = !!(window.CONFIG && window.CONFIG.show_all_apps);
   var HIDDEN = /^(home|e-manual)$/i;
   // El tiempo solo se consulta si el usuario configura una ciudad.
   var CITY = (window.CONFIG && window.CONFIG.city) || null;
+
+  // Lista de bloqueo integrada: apps de sistema/diagnóstico conocidas que son peligrosas o inútiles.
+  // El usuario puede añadir más via CONFIG.blocklist en config.js (array de strings o regex).
+  var BUILTIN_BLOCKLIST = [
+    /aging/i,           // AgingAPP / Burn-In / Aging Mode
+    /burn.?in/i,        // Burn In test
+    /\bdiagnostic\b/i,  // Diagnostic apps
+    /\bfactory\b/i,     // Factory mode apps
+    /\bdevelop\b/i,     // Developer/debug apps
+    /\btest\b/i,        // Test apps (con límite de palabra)
+    /calibration/i,     // Calibration tools
+    /pattern/i,         // Pattern generators
+    /\bpixel\b/i,       // Pixel test/fix
+    /e.?manual/i,       // E-Manual (ya en HIDDEN, pero por si acaso)
+    /smart.?hub/i,      // Smart Hub self
+    /tv.?plus/i,        // TV Plus (suele ser servicio)
+    /samsung.?health/i, // Samsung Health (no lanza bien en TV)
+    /bixby/i,           // Bixby (no lanza bien)
+    /game.?mode/i,      // Game mode toggles
+    /hdmi.?cec/i,       // HDMI CEC tools
+    /edid/i,            // EDID tools
+    /\bhotel\b/i,       // Hotel mode
+    /\bshop\b/i,        // Shop/retail mode
+    /\bdemo\b/i,        // Demo mode
+    /installer/i,       // Installer apps
+    /updater/i,         // Updater services
+    /drminfo/i,         // DRM info
+    /playready/i,       // PlayReady test
+    /widevine/i,        // Widevine test
+    /verimatrix/i,      // Verimatrix test
+    /secure.?storage/i, // Secure storage test
+    /keymanager/i,      // Key manager
+    /certificate/i,     // Certificate manager
+    /device.?manager/i, // Device manager
+    /system.?info/i,    // System info
+    /hw.?test/i,        // Hardware test
+    /panel.?test/i,     // Panel test
+    /audio.?test/i,     // Audio test
+    /rf.?test/i,        // RF test
+    /wifi.?test/i,      // WiFi test
+    /bluetooth.?test/i, // Bluetooth test
+    /nfc.?test/i,       // NFC test
+    /irda.?test/i,      // IR test
+    /cec.?test/i,       // CEC test
+    /arc.?test/i,       // ARC/eARC test
+    /hdr.?test/i,       // HDR test
+    /color.?test/i,     // Color test
+    /gamma.?test/i,     // Gamma test
+    /white.?balance/i,  // White balance
+    /uniformity/i,      // Uniformity test
+    /mura/i,            // Mura correction
+    /stuck.?pixel/i,    // Stuck pixel
+    /image.?retention/i,// Image retention
+    /logo.?test/i,      // Logo test
+    /boot.?logo/i,      // Boot logo
+    /factory.?reset/i,  // Factory reset
+    /data.?reset/i,     // Data reset
+    /self.?diagnosis/i, // Self diagnosis
+    /customer.?service/i, // Customer service
+    /field.?test/i,     // Field test
+    /service.?mode/i,   // Service mode
+    /engineer.?mode/i,  // Engineer mode
+    /expert.?setting/i, // Expert setting
+    /hidden.?menu/i,    // Hidden menu
+    /secret.?menu/i,    // Secret menu
+  ];
+
+  function isCustomBlocked(name) {
+    if (!name) return false;
+    var userBlocklist = (window.CONFIG && window.CONFIG.blocklist) || [];
+    for (var i = 0; i < userBlocklist.length; i++) {
+      var entry = userBlocklist[i];
+      if (typeof entry === "string") {
+        if (entry.toLowerCase() === name.toLowerCase()) return true;
+      } else if (entry && typeof entry.test === "function") {
+        if (entry.test(name)) return true;
+      }
+    }
+    return false;
+  }
+
+  function isBlocked(name) {
+    if (!name) return false;
+    if (HIDDEN.test(name)) return true;
+    for (var i = 0; i < BUILTIN_BLOCKLIST.length; i++) {
+      if (BUILTIN_BLOCKLIST[i].test(name)) return true;
+    }
+    return isCustomBlocked(name);
+  }
 
   // [patrón, fondo, logo, brillo, texto si no hay logo]
   var BRANDS = [
     [/netflix/i,     "#F2F2F4", "netflix",     "netflix"],
     [/youtube/i,     "#F2F2F4", "youtube",     "youtube"],
+    [/spotify/i,     "#F2F2F4", "spotify",     "default"],
+    [/flow/i,        "#F2F2F4", "flow",        "default"],
+    [/jellyfin/i,    "#F2F2F4", "jellyfin",    "default"],
+    [/internet|browser/i, "#16233A", "internet", "internet"],
+    [/sonance/i,     "#222225", "sonance",     "default"],
+    [/xuper/i,       "#222225", "xuper",       "default"],
+    [/tessel/i,      "#222225", "tessel",      "default"],
     [/prime/i,       "#1560F5", "primevideo",  "prime"],
     [/disney/i,      "#13296F", "disneyplus",  "disney"],
     [/hbo|^max$/i,   "#4A2BEB", "hbomax",      "hbo"],
@@ -19,7 +116,6 @@
     [/3cat|tv3/i,    "#F2F2F4", "3cat",        "3cat"],
     [/rakuten/i,     "#F2F2F4", "rakuten",     "rakuten"],
     [/skyshowtime/i, "#2A165A", null, "sky",      "SkyShowtime"],
-    [/internet|browser/i, "#16233A", null, "internet", "Internet"],
     [/gallery|galer/i,    "#222225", null, "gallery",  "Galería"]
   ];
   var DEFAULT_BRAND = ["#222225", null, "default"];
@@ -73,6 +169,9 @@
     // Marco de foco: solo se mueve (posiciones calculadas una vez en load).
     if (el.pos) {
       ring.style.transform = "translate(" + (el.pos[0] - 17) + "px," + (el.pos[1] - 11.5) + "px)";
+      ring.style.width = (el.offsetWidth + 34) + "px";
+      ring.style.height = (el.offsetHeight + 23) + "px";
+      ring.style.borderRadius = "43px";
       if (ringHidden) { ring.className = ""; ringHidden = false; }
     } else if (!ringHidden) { ring.className = "hide"; ringHidden = true; }
     if (el.item.name && nameEl.textContent !== el.item.name) nameEl.textContent = el.item.name;
@@ -105,19 +204,53 @@
 
   function addRow(apps, dock) {
     var row = document.createElement("div"), holder = row, tiles = [];
-    row.className = dock ? "row dock" : "row";
+    var compactDock = dock && apps.length > 5;
+    row.className = dock ? "row dock" + (compactDock ? " compact" : "") : "row";
     if (dock) { holder = document.createElement("div"); holder.className = "tray"; row.appendChild(holder); }
-    for (var i = 0; i < apps.length; i++) { var t = makeTile(apps[i]); tiles.push(t); holder.appendChild(t); }
+    var gap = 10;
+    var tileWidth = compactDock ? Math.floor((1920 - 2 * 104 - 36 - gap * (apps.length - 1)) / apps.length) : 0;
+    for (var i = 0; i < apps.length; i++) {
+      var t = makeTile(apps[i]);
+      if (compactDock) {
+        t.style.width = tileWidth + "px";
+        t.style.marginRight = i === apps.length - 1 ? "0" : gap + "px";
+      }
+      tiles.push(t);
+      holder.appendChild(t);
+    }
     $("rows").appendChild(row);
     rows.push(tiles);
   }
 
   // Solo apps del panel de la TV (apps.js). Así no salen servicios, daemons ni duplicados.
   function inPanel(a) {
-    if (!PANEL_APPS.length) return a.show ? { id: a.id, name: a.name } : null;
+    if (SHOW_ALL_APPS) return { id: a.id, name: a.name, key: "app:" + a.id };
+    if (!PANEL_APPS.length) {
+      // Sin PANEL_APPS: mostrar TODAS las apps visibles e instaladas (no solo las del panel).
+      // Filtramos servicios/daemons por nombre y por id, pero no exijimos "show".
+      if (/service|svc|daemon|widget|\.service$/i.test(a.id)) return null;
+      return { id: a.id, name: a.name, key: "app:" + a.id };
+    }
+    // Con PANEL_APPS: mostrar las apps de la lista + las de CONFIG.samsung_apps.
     for (var i = 0; i < PANEL_APPS.length; i++) {
       var p = PANEL_APPS[i].id;
-      if (a.id === p || a.packageId === p || a.id.indexOf(p + ".") === 0) return PANEL_APPS[i];
+      if (a.id === p || a.packageId === p || a.id.indexOf(p + ".") === 0)
+        return { id: p, name: PANEL_APPS[i].name, key: "panel:" + p };
+    }
+    // Apps de Samsung adicionales definidas en config.js.
+    var samsungApps = (window.CONFIG && window.CONFIG.samsung_apps) || [];
+    for (var s = 0; s < samsungApps.length; s++) {
+      var sp = samsungApps[s];
+      var idMatch = sp.id && (a.id === sp.id || a.packageId === sp.id || a.id.indexOf(sp.id + ".") === 0);
+      var nameMatch = sp.name && a.name && a.name.toLowerCase() === sp.name.toLowerCase();
+      if (idMatch || nameMatch) {
+        return {
+          id: sp.id || a.id,
+          name: sp.name || a.name,
+          key: "samsung:" + String(sp.id || sp.name).toLowerCase(),
+          allowBuiltInBlocked: true
+        };
+      }
     }
     return null;
   }
@@ -128,16 +261,31 @@
     for (var i = 0; i < all.length; i++) {
       var a = all[i], p = inPanel(a);
       if (!p || a.id === self) continue;
+      var key = p.key || p.id;
       var score = (a.id === p.id ? 4 : 0) + (a.show ? 2 : 0) + (/service|svc|daemon|widget/i.test(a.id) ? 0 : 1);
-      if (!best[p.id]) order.push(p);
-      if (!best[p.id] || score > best[p.id].score) best[p.id] = { id: a.id, score: score };
+      if (!best[key]) order.push(p);
+      if (!best[key] || score > best[key].score) best[key] = { id: a.id, score: score };
     }
     for (var n = 0; n < order.length; n++) {
       var p = order[n];
-      var app = { id: best[p.id].id, name: p.name };
+      var key = p.key || p.id;
+      var app = { id: best[key].id, name: p.name };
       if (/tizenbrew/i.test(p.name)) { brew = app; continue; }
-      if (!HIDDEN.test(p.name)) apps.push(app);
+      if (p.allowBuiltInBlocked || SHOW_ALL_APPS ? !isCustomBlocked(p.name) : !isBlocked(p.name)) apps.push(app);
     }
+
+    // Deduplicar por nombre (insensible a mayúsculas) cuando no hay PANEL_APPS.
+    // Mantiene la primera ocurrencia (la de mayor score).
+    var seenNames = {};
+    var deduped = [];
+    for (var m = 0; m < apps.length; m++) {
+      var key = apps[m].name.toLowerCase();
+      if (!seenNames[key]) {
+        seenNames[key] = true;
+        deduped.push(apps[m]);
+      }
+    }
+    apps = deduped;
 
     var pills = [];
     addPill(pills, "Ajustes", "default", openSettings);
@@ -149,7 +297,26 @@
       for (var j = 0; j < apps.length; j++)
         if (apps[j].name.toLowerCase() === DOCK[d].toLowerCase()) dock.push(apps[j]);
     for (var k = 0; k < apps.length; k++) if (dock.indexOf(apps[k]) < 0) rest.push(apps[k]);
-    rest.sort(function (x, y) { return x.name.localeCompare(y.name); });
+
+    // Orden personalizado: las apps listadas en CONFIG.order aparecen primero, en ese orden.
+    var customOrder = (window.CONFIG && window.CONFIG.order) || [];
+    if (customOrder.length) {
+      var ordered = [], remaining = rest.slice();
+      for (var o = 0; o < customOrder.length; o++) {
+        var target = customOrder[o].toLowerCase();
+        for (var ri = 0; ri < remaining.length; ri++) {
+          if (remaining[ri].name.toLowerCase() === target) {
+            ordered.push(remaining[ri]);
+            remaining.splice(ri, 1);
+            ri--;
+          }
+        }
+      }
+      remaining.sort(function (x, y) { return x.name.localeCompare(y.name); });
+      rest = ordered.concat(remaining);
+    } else {
+      rest.sort(function (x, y) { return x.name.localeCompare(y.name); });
+    }
 
     // Primero el dock y se pinta ya: la pantalla aparece completa cuanto antes.
     addRow(dock, true);

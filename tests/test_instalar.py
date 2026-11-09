@@ -20,7 +20,8 @@ import zipfile
 SOURCE_REPO = Path(os.environ.get('HACKTV_TEST_REPO', Path(__file__).resolve().parents[1])).resolve()
 ROOT_ASSETS = ('config.xml', 'index.html', 'style.css', 'app.js', 'icon.png')
 LOGOS = ('3cat', 'appletv', 'atresplayer', 'disneyplus', 'hbomax', 'movistar',
-         'netflix', 'plex', 'primevideo', 'rakuten', 'youtube')
+         'flow', 'internet', 'jellyfin', 'netflix', 'plex', 'primevideo',
+         'rakuten', 'sonance', 'spotify', 'tessel', 'xuper', 'youtube')
 GLOW = ('3cat', 'apple', 'atres', 'brew', 'default', 'disney', 'gallery', 'hbo',
         'internet', 'movistar', 'netflix', 'plex', 'prime', 'rakuten', 'sky', 'youtube')
 EXPECTED_ENTRIES = set(ROOT_ASSETS) | {'config.js', 'apps.js'} | {
@@ -146,17 +147,17 @@ class InstallerTests(unittest.TestCase):
         (self.repo / 'build' / 'package').symlink_to(self.external, target_is_directory=True)
         self.assert_rejected_without_mutation()
 
-    def test_clean_build_has_exactly_34_entries_with_original_bytes(self):
+    def test_clean_build_has_exactly_41_entries_with_original_bytes(self):
         stage = self.installer.prepare()
         self.assertEqual(stage, self.repo / 'build' / 'package')
-        self.assertEqual(len(EXPECTED_ENTRIES), 34)
+        self.assertEqual(len(EXPECTED_ENTRIES), 41)
         self.assertEqual((self.launcher / 'config.js').read_bytes(),
                          (self.launcher / 'config.example.js').read_bytes())
         self.assertEqual((self.launcher / 'apps.js').read_bytes(),
                          (self.launcher / 'apps.example.js').read_bytes())
         with zipfile.ZipFile(self.repo / 'build' / 'Home-unsigned.wgt') as archive:
             self.assertEqual(set(archive.namelist()), EXPECTED_ENTRIES)
-            self.assertEqual(len(archive.namelist()), 34)
+            self.assertEqual(len(archive.namelist()), 41)
             for name in EXPECTED_ENTRIES:
                 self.assertEqual(archive.read(name), (self.launcher / name).read_bytes(), name)
                 self.assertEqual((stage / name).read_bytes(), (self.launcher / name).read_bytes(), name)

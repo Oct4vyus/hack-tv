@@ -1,0 +1,31 @@
+{
+  "projectDir": "D:\\Repositorios\\hack-tv\\MyProject",
+  "deploys": {
+    "next": [
+      {
+        "path": "Debug/projects/MyProject/config.xml",
+        "type": "add"
+      },
+      {
+        "path": "Debug/projects/MyProject/css/style.css",
+        "type": "add"
+      },
+      {
+        "path": "Debug/projects/MyProject/icon.png",
+        "type": "add"
+      },
+      {
+        "path": "Debug/projects/MyProject/images/tizen_32.png",
+        "type": "add"
+      },
+      {
+        "path": "Debug/projects/MyProject/index.html",
+        "type": "add"
+      },
+      {
+        "path": "Debug/projects/MyProject/js/main.js",
+        "type": "add"
+      }
+    ]
+  }
+}
