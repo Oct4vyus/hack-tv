@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "MyProject",
+			"path": "MyProject"
+		}
+	],
+	"settings": {
+		"tizen.v2.working.project": "d:\\Repositorios\\hack-tv\\MyProject"
+	}
+}
