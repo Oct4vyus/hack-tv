@@ -150,6 +150,10 @@
     return el;
   }
 
+  function normalizeAppLabel(value) {
+    return String(value || "").replace(/\s+/g, " ").replace(/^\s+|\s+$/g, "").toLowerCase();
+  }
+
   function setGlow(name) {
     if (name === glowName) return;
     glowName = name;
@@ -241,13 +245,17 @@
     var samsungApps = (window.CONFIG && window.CONFIG.samsung_apps) || [];
     for (var s = 0; s < samsungApps.length; s++) {
       var sp = samsungApps[s];
-      var idMatch = sp.id && (a.id === sp.id || a.packageId === sp.id || a.id.indexOf(sp.id + ".") === 0);
-      var nameMatch = sp.name && a.name && a.name.toLowerCase() === sp.name.toLowerCase();
+      var selected = sp.id || sp.name;
+      var idMatch = selected && (
+        a.id === selected || a.packageId === selected ||
+        a.id.indexOf(selected + ".") === 0 || a.packageId === selected
+      );
+      var nameMatch = sp.name && normalizeAppLabel(a.name) === normalizeAppLabel(sp.name);
       if (idMatch || nameMatch) {
         return {
-          id: sp.id || a.id,
-          name: sp.name || a.name,
-          key: "samsung:" + String(sp.id || sp.name).toLowerCase(),
+          id: a.id,
+          name: a.name || sp.name,
+          key: "samsung:" + normalizeAppLabel(selected),
           allowBuiltInBlocked: true
         };
       }
@@ -279,7 +287,7 @@
     var seenNames = {};
     var deduped = [];
     for (var m = 0; m < apps.length; m++) {
-      var key = apps[m].name.toLowerCase();
+      var key = normalizeAppLabel(apps[m].name);
       if (!seenNames[key]) {
         seenNames[key] = true;
         deduped.push(apps[m]);
@@ -303,9 +311,9 @@
     if (customOrder.length) {
       var ordered = [], remaining = rest.slice();
       for (var o = 0; o < customOrder.length; o++) {
-        var target = customOrder[o].toLowerCase();
+        var target = normalizeAppLabel(customOrder[o]);
         for (var ri = 0; ri < remaining.length; ri++) {
-          if (remaining[ri].name.toLowerCase() === target) {
+          if (normalizeAppLabel(remaining[ri].name) === target) {
             ordered.push(remaining[ri]);
             remaining.splice(ri, 1);
             ri--;
